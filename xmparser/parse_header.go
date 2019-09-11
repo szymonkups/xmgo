@@ -25,15 +25,13 @@ type XMFileHeader struct {
 }
 
 // ParseHeader parses a provided file to XMLFileHeader
-func ParseHeader(f *os.File) (XMFileHeader, error) {
-	f.Seek(0, 0)
-
+func parseHeader(f *os.File) (*XMFileHeader, error) {
 	header := XMFileHeader{}
 	err := binary.Read(f, binary.LittleEndian, &header)
 
 	if err != nil {
-		return header, err
+		return nil, err
 	}
 
-	return header, nil
+	return &header, nil
 }

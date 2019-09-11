@@ -21,19 +21,16 @@ type PatternHeader struct {
 type Row = []Cell
 
 // ParsePatterns parses XM file patterns starting of given offset
-func ParsePattern(f *os.File, fileHeader *XMFileHeader) (Pattern, error) {
+func parsePattern(f *os.File, fileHeader *XMFileHeader) (*Pattern, error) {
 	pattern := Pattern{}
-
-	// HeaderSize is calculated from place where this info is stored in header
-	f.Seek(int64(fileHeader.HeaderSize+headerSizeOffset), 0)
 
 	header, err := parsePatternHeader(f)
 
 	if err != nil {
-		return pattern, err
+		return nil, err
 	}
 
-	pattern.Header = header
+	pattern.Header = *header
 	pattern.Rows = make([]Row, header.NoRows)
 
 	if header.DataSize > 0 {
@@ -43,28 +40,28 @@ func ParsePattern(f *os.File, fileHeader *XMFileHeader) (Pattern, error) {
 				cell, err := parseCell(f)
 
 				if err != nil {
-					return pattern, err
+					return nil, err
 				}
 
-				pattern.Rows[r][c] = cell
+				pattern.Rows[r][c] = *cell
 			}
 		}
 	}
 
-	return pattern, nil
+	return &pattern, nil
 }
 
-func parsePatternHeader(f *os.File) (PatternHeader, error) {
+func parsePatternHeader(f *os.File) (*PatternHeader, error) {
 	header := PatternHeader{}
 	err := binary.Read(f, binary.LittleEndian, &header)
 
 	if err != nil {
-		return PatternHeader{}, err
+		return nil, err
 	}
 
 	if header.PackingType != supportedPacking {
-		return PatternHeader{}, fmt.Errorf("Wrong patter packing, expected %d but got %d", supportedPacking, header.PackingType)
+		return nil, fmt.Errorf("Wrong patter packing, expected %d but got %d", supportedPacking, header.PackingType)
 	}
 
-	return header, nil
+	return &header, nil
 }

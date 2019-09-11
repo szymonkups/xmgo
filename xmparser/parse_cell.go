@@ -14,13 +14,13 @@ type Cell struct {
 	EffectParam uint8
 }
 
-func parseCell(f *os.File) (Cell, error) {
+func parseCell(f *os.File) (*Cell, error) {
 	var b uint8
 	err := binary.Read(f, binary.LittleEndian, &b)
 	c := Cell{}
 
 	if err != nil {
-		return c, err
+		return nil, err
 	}
 
 	// Compression
@@ -29,7 +29,7 @@ func parseCell(f *os.File) (Cell, error) {
 		if b & 0b00000001 > 0 {
 			err = binary.Read(f, binary.LittleEndian, &(c.Note))
 			if err != nil {
-				return c, err
+				return nil, err
 			}
 		}
 
@@ -37,7 +37,7 @@ func parseCell(f *os.File) (Cell, error) {
 		if b & 0b00000010 > 0 {
 			err = binary.Read(f, binary.LittleEndian, &(c.Instrument))
 			if err != nil {
-				return c, err
+				return nil, err
 			}
 		}
 
@@ -45,7 +45,7 @@ func parseCell(f *os.File) (Cell, error) {
 		if b & 0b00000100 > 0 {
 			err = binary.Read(f, binary.LittleEndian, &(c.Volume))
 			if err != nil {
-				return c, err
+				return nil, err
 			}
 		}
 
@@ -53,7 +53,7 @@ func parseCell(f *os.File) (Cell, error) {
 		if b & 0b00001000 > 0 {
 			err = binary.Read(f, binary.LittleEndian, &(c.Effect))
 			if err != nil {
-				return c, err
+				return nil, err
 			}
 		}
 
@@ -61,7 +61,7 @@ func parseCell(f *os.File) (Cell, error) {
 		if b & 0b00010000 > 0 {
 			err = binary.Read(f, binary.LittleEndian, &(c.EffectParam))
 			if err != nil {
-				return c, err
+				return nil, err
 			}
 		}
 	} else if b > 0 {
@@ -72,9 +72,9 @@ func parseCell(f *os.File) (Cell, error) {
 
 		binary.Read(f, binary.LittleEndian, &c)
 		if err != nil {
-			return c, err
+			return nil, err
 		}
 	}
 
-	return c, nil
+	return &c, nil
 }

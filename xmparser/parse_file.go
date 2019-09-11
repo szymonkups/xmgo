@@ -14,37 +14,49 @@ const (
 )
 
 type Song struct {
-	header   XMFileHeader
-	patterns []Pattern
+	header      XMFileHeader
+	patterns    []Pattern
+	instruments []Instrument
 }
 
-func ParseFile(filename string) (Song, error) {
-	xm := Song{}
+func ParseFile(filename string) (*Song, error) {
 	f, err := os.Open(filename)
 
 	if err != nil {
-		return xm, err
+		return nil, err
 	}
 
 	defer f.Close()
 
-	header, err := ParseHeader(f)
+	header, err := parseHeader(f)
 	if err != nil {
-		return xm, err
+		return nil, err
 	}
 
-	xm.header = header
-	xm.patterns = make([]Pattern, header.NoPatterns)
+	// HeaderSize is calculated from place where this info is stored in header
+	f.Seek(int64(header.HeaderSize+headerSizeOffset), 0)
 
-	for i := uint16(0); i < header.NoPatterns; i++ {
-		pattern, err := ParsePattern(f, &header)
+	patterns := make([]Pattern, header.NoPatterns)
+	for p := uint16(0); p < header.NoPatterns; p++ {
+		pattern, err := parsePattern(f, header)
 
 		if err != nil {
-			return xm, err
+			return nil, err
 		}
 
-		xm.patterns[i] = pattern
+		patterns[p] = *pattern
 	}
 
-	return xm, nil
+	instruments := make([]Instrument, header.NoInstruments)
+	for i := uint16(0); i < header.NoInstruments; i++ {
+		instrument, err := parseInstrument(f)
+
+		if err != nil {
+			return nil, err
+		}
+
+		instruments[i] = *instrument
+	}
+
+	return &Song{*header, patterns, instruments}, nil
 }
