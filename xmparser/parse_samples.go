@@ -22,7 +22,7 @@ type SampleHeader struct {
 	Name       [22]uint8
 }
 
-func parseSamples(f *os.File, noSamples uint16, headerSize uint32) (*[]Sample, error) {
+func parseSamples(f *os.File, noSamples uint16, headerSize uint32) ([]Sample, error) {
 	samples := make([]Sample, noSamples)
 
 	// Save current file position so we can skip headers
@@ -52,12 +52,19 @@ func parseSamples(f *os.File, noSamples uint16, headerSize uint32) (*[]Sample, e
 		}
 	}
 
-	// Pars all sample data
+	// Parse all sample data
 	for d := uint16(0); d < noSamples; d++ {
 		header := samples[d].Header
+		// TODO: parse data
 
-		f.Seek(int64(header.DataLength), os.SEEK_CUR)
+		// Skip by data length from header
+		startPos += int64(header.DataLength)
+		_, err = f.Seek(startPos, os.SEEK_SET)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return &samples, nil
+	return samples, nil
 }

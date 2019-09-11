@@ -16,7 +16,7 @@ const (
 type Song struct {
 	header      XMFileHeader
 	patterns    []Pattern
-	instruments []Instrument
+	Instruments []Instrument
 }
 
 func ParseFile(filename string) (*Song, error) {

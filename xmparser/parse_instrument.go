@@ -70,9 +70,9 @@ func parseInstrument(f *os.File) (*Instrument, error) {
 		return nil, err
 	}
 
-	samples := make([]Sample, header.NoSamples)
+	var samples []Sample
 	if header.NoSamples > 0 {
-		_, err = parseSamples(f, header.NoSamples, info.SampleHeaderSize)
+		samples, err = parseSamples(f, header.NoSamples, info.SampleHeaderSize)
 		if err != nil {
 			return nil, err
 		}
